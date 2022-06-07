@@ -1,1 +1,1 @@
-# genetic-knapsack
+Genetic knapsack
