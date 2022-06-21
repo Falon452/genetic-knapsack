@@ -80,7 +80,7 @@ def compare_algorithms(filenames, save_path):
 if __name__ == '__main__':
     df = None
     filenames = get_filenames_in_dir(INPUT_PATH)
-    df = compare_algorithms(filenames, "result")
+    df = compare_algorithms(filenames, "result2")
     print(df)
 
     # dynamic_res, or_tools_res, genetic_res = None, None, None

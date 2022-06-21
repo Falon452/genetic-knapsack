@@ -6,8 +6,8 @@ from Settings import MAX_TIME_IN_SEC
 # pip install func_timeout
 
 POPULATION_SIZE = 100
-PARENT_QUANTITY = 10
-GENERATIONS = 100
+PARENT_QUANTITY = 20
+GENERATIONS = 150
 
 
 def genetic_solve(n, value, weight, capacity):
