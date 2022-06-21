@@ -1,19 +1,15 @@
 from Reader import parse_file, get_optimum, get_filenames_in_dir
 from Dynamic import dynamic_solve
 from Genetic import genetic_solve
-# from OR_Tools import OR_Tools_solve
-from TimeLimit import time_limit, TimeoutException
+from OR_Tools import OR_Tools_solve
 from Stats import accuracy
 import pandas as pd
-import time
 
 from timeit import default_timer as timer
 from datetime import timedelta
 
-MAX_TIME_IN_SEC = 5
-
-INPUT_PATH = "instances_01_KP/low-dimensional/"
-OPTIMUM_PATH = "instances_01_KP/low-dimensional-optimum/"
+INPUT_PATH = "instances_01_KP/large_scale/"
+OPTIMUM_PATH = "instances_01_KP/large_scale-optimum/"
 
 
 def compare_algorithms(filenames, save_path):
@@ -42,7 +38,7 @@ def compare_algorithms(filenames, save_path):
 
         # genetic
         start = timer()
-        gen_res = test_function(n, value, weight, capacity, genetic_solve)
+        gen_res = genetic_solve(n, value, weight, capacity)
         end = timer()
         data['Gen res'].append(gen_res)
         data['Gen acc'].append(accuracy(gen_res, optimum))
@@ -50,7 +46,7 @@ def compare_algorithms(filenames, save_path):
 
         # dynamic
         start = timer()
-        dp_res = test_function(n, value, weight, capacity, dynamic_solve)
+        dp_res = dynamic_solve(n, value, weight, capacity)
         end = timer()
         data['DP res'].append(dp_res)
         data['DP acc'].append(accuracy(dp_res, optimum))
@@ -58,35 +54,34 @@ def compare_algorithms(filenames, save_path):
 
         # or tools
         start = timer()
-        # or_res = test_function(n, value, weight, OR_Tools_solve)
-        or_res = None
+        or_res = OR_Tools_solve(n, value, weight, capacity)
         end = timer()
         data['OR res'].append(or_res)
         data['OR acc'].append(accuracy(or_res, optimum))
         data['OR time'].append(timedelta(seconds=end - start).microseconds)
 
-
     df = pd.DataFrame(data)
-
+    df = df.round(2)
     df.to_csv(f'{save_path}.csv', index=False)
     return df
 
 
-def test_function(n, value, weight, capacity, function):
-    res = None
-    try:
-        with time_limit(MAX_TIME_IN_SEC):
-            res = function(n, value, weight, capacity)
-    except TimeoutException as e:
-        print(f"{function.__name__} timeout after {MAX_TIME_IN_SEC} seconds")
-
-    return res
+# def test_function(n, value, weight, capacity, function):
+#     res = None
+#     try:
+#         with time_limit(MAX_TIME_IN_SEC):
+#             res = function(n, value, weight, capacity)
+#     except TimeoutException as e:
+#         print(f"{function.__name__} timeout after {MAX_TIME_IN_SEC} seconds")
+#
+#     return res
 
 
 if __name__ == '__main__':
+    df = None
     filenames = get_filenames_in_dir(INPUT_PATH)
     df = compare_algorithms(filenames, "result")
-    print(df.head())
+    print(df)
 
     # dynamic_res, or_tools_res, genetic_res = None, None, None
     # n, value, weight, capacity = parse_file("instances_01_KP/low-dimensional/f4_l-d_kp_4_11")

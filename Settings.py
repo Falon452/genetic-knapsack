@@ -1,0 +1,1 @@
+MAX_TIME_IN_SEC = 1

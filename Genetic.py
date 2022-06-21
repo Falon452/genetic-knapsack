@@ -1,9 +1,12 @@
 from typing import List
-
+from TimeLimit import time_limit
+from TimeLimit import TimeoutException
 import numpy as np
+from Settings import MAX_TIME_IN_SEC
+# pip install func_timeout
 
-POPULATION_SIZE = 500
-PARENT_QUANTITY = 50
+POPULATION_SIZE = 100
+PARENT_QUANTITY = 10
 GENERATIONS = 100
 
 
@@ -14,20 +17,24 @@ def genetic_solve(n, value, weight, capacity):
     population = initialize_population(weight, capacity)
     best_solution = np.zeros(n)
     best_result = 0
-    for i in range(GENERATIONS):
-        fitness_score = evaluate_fitness(population, value, weight, capacity)
-        best_in_pop_id = max(range(len(population)), key=lambda x: fitness_score[x])
-        best_in_pop = population[best_in_pop_id]
-        result = np.sum(value * best_in_pop)
-        print(f"iteration {i} = {result}" if sum(fitness_score) != 0 else f"iteration {i} = {0}")
-        if result > best_result and fitness_score[best_in_pop_id] != 0:
-            best_result = result
-            best_solution = best_in_pop
-        population = generate_children(population, fitness_score)
-        population = mutate_population(population)
-
-    # można zwrócić też best solution jak chcemy wiedzieć co braliśmy
-    return best_result
+    try:
+        with time_limit(MAX_TIME_IN_SEC):
+            for i in range(GENERATIONS):
+                fitness_score = evaluate_fitness(population, value, weight, capacity)
+                best_in_pop_id = max(range(len(population)), key=lambda x: fitness_score[x])
+                best_in_pop = population[best_in_pop_id]
+                result = np.sum(value * best_in_pop)
+                # print(f"iteration {i} = {result}" if sum(fitness_score) != 0 else f"iteration {i} = {0}")
+                if result > best_result and fitness_score[best_in_pop_id] != 0:
+                    best_result = result
+                    best_solution = best_in_pop
+                population = generate_children(population, fitness_score)
+                population = mutate_population(population)
+            # można zwrócić też best solution jak chcemy wiedzieć co braliśmy
+            return best_result
+    except TimeoutException as e:
+        print("timeout!")
+        return best_result
 
 
 def _fitness(values: np.ndarray, weights: np.ndarray, capacity: int, chromosome: np.ndarray):
@@ -42,7 +49,7 @@ def _generate_chromosome(weights: np.ndarray, capacity: int):
         prob = 0.5 * capacity / np.sum(weights)
         rand = np.random.uniform(0, 1, len(weights))
         chromosome = np.array([1 if rand[i] < prob else 0 for i in range(len(weights))])
-        if sum(chromosome*weights) <= capacity:
+        if sum(chromosome * weights) <= capacity:
             return chromosome
 
 
@@ -103,36 +110,36 @@ def mutate_population(population: List):
 
 
 if __name__ == '__main__':
-    weights = [ 70,
- 73,
- 77,
- 80,
- 82,
- 87,
- 90,
- 94,
- 98,
-106,
-110,
-113,
-115,
-118,
-120]
+    weights = [70,
+               73,
+               77,
+               80,
+               82,
+               87,
+               90,
+               94,
+               98,
+               106,
+               110,
+               113,
+               115,
+               118,
+               120]
     values = [135,
-139,
-149,
-150,
-156,
-163,
-173,
-184,
-192,
-201,
-210,
-214,
-221,
-229,
-240]
+              139,
+              149,
+              150,
+              156,
+              163,
+              173,
+              184,
+              192,
+              201,
+              210,
+              214,
+              221,
+              229,
+              240]
     res = genetic_solve(len(values), values, weights, 750)
     print("final value = ", res)
     # optimal = 1458
